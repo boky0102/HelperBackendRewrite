@@ -1,1 +1,1 @@
-INSERT INTO "user" (first_name, last_name) VALUES ('Borna', 'Ivankovic');
+INSERT INTO "user" (first_name, last_name, user_name) VALUES ('Borna', 'Ivankovic', 'boky0102');
