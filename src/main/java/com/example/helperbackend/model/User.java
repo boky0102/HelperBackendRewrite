@@ -2,7 +2,7 @@ package com.example.helperbackend.model;
 
 import org.springframework.data.annotation.Id;
 
-import java.time.LocalDate;
+import java.sql.Timestamp;
 
 
 public record User (
@@ -10,10 +10,13 @@ public record User (
     @Id
     String uid,
 
-    String userName,
+    String username,
     String firstName,
     String lastName,
     String password,
-    LocalDate createdAt,
+
+    Timestamp createdAt,
+
+    String role,
     Integer aid
 ){}

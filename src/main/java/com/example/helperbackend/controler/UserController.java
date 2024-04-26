@@ -2,11 +2,11 @@ package com.example.helperbackend.controler;
 
 import com.example.helperbackend.model.User;
 import com.example.helperbackend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -15,9 +15,14 @@ public class UserController {
 
     UserRepository userRepository;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     UserController(UserRepository userRepository){
         this.userRepository = userRepository;
     }
+
+
 
     @GetMapping("")
     public ResponseEntity<List<User>> getAllUsers(){
@@ -28,7 +33,7 @@ public class UserController {
 
     @GetMapping("/{username}")
     public ResponseEntity<User> getUserById(@PathVariable String username){
-        User user = userRepository.findUserByUserName(username);
+        User user = userRepository.findUserByUsername(username);
         if(user == null){
             return ResponseEntity.notFound().build();
         } else{
@@ -36,17 +41,5 @@ public class UserController {
         }
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<Void> registerUser(@RequestBody User user){
-        User newUser = new User(null, user.userName(), user.firstName(), user.lastName(), user.password(), null, null);
-        userRepository.save(newUser);
-
-        URI newUserURI = UriComponentsBuilder.fromPath("/users/{username}")
-                        .buildAndExpand(user.userName())
-                        .toUri();
-
-        return ResponseEntity.created(newUserURI).build();
-
-    }
 }
 
