@@ -24,9 +24,8 @@ public class AuthorizationController {
         this.userRepository = userRepository;
     }
 
-//    @CrossOrigin(origins = "http://localhost:5173")
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User postUser){
+    public ResponseEntity<Void> registerUser(@RequestBody User postUser){
 
         User user = userRepository.findUserByUsername(postUser.username());
 
@@ -51,5 +50,19 @@ public class AuthorizationController {
 
         userRepository.save(newUser);
         return ResponseEntity.created(newUserURI).build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Void> userAuthentication(@RequestBody User userCredentials){
+
+        User user = userRepository.findUserByUsername(userCredentials.username());
+        if(user == null){
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok().build();
+
+
+
     }
 }

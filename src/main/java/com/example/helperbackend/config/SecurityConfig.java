@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 
 
 @Configuration
@@ -29,11 +30,17 @@ public class SecurityConfig{
         this.userDetailsService = userDetailsService;
     }
 
+
     @Bean
     CorsConfigurationSource corsConfigurationSource(){
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(Arrays.asList("X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
+        source.registerCorsConfiguration("/**", configuration);
         return source;
 
     }
@@ -41,15 +48,22 @@ public class SecurityConfig{
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
+
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/users").hasAuthority("USER")
                         .anyRequest().authenticated()
 
                 )
+                .formLogin(formLogin -> formLogin.disable())
+                .rememberMe(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults());
+
+
+
         return http.build();
 
     }
@@ -70,6 +84,8 @@ public class SecurityConfig{
         authenticationProvider.setPasswordEncoder(passwordEncoder);
         return new ProviderManager(authenticationProvider);
     }
+
+
 
 
 }
