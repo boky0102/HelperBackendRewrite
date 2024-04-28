@@ -1,19 +1,22 @@
 package com.example.helperbackend.usertest;
 
-
 import com.example.helperbackend.model.User;
 import com.example.helperbackend.repository.UserRepository;
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
+
 import net.minidev.json.JSONArray;
+
 import org.junit.jupiter.api.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -106,6 +109,31 @@ public class UserControllerTests {
                 .withBasicAuth("jole0102", "joca123")
                 .getForEntity("/users/boky01023", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
+    @Test
+    void shouldNot_ReturnSensitiveInformation(){
+
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("jole0102", "joca123")
+                .getForEntity("/users/jole0102", String.class);
+
+
+
+        Configuration config = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
+        DocumentContext documentContext = JsonPath.using(config).parse(response.getBody());
+
+        String password = documentContext.read("$.password");
+
+        assertThat(password).isNull();
+
+        String role = documentContext.read("$.role");
+
+        assertThat(role).isNull();
+
+
+
 
     }
 

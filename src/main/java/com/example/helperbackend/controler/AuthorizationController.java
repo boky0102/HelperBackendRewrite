@@ -3,13 +3,17 @@ package com.example.helperbackend.controler;
 
 import com.example.helperbackend.model.User;
 import com.example.helperbackend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.helperbackend.service.TokenService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("")
@@ -17,11 +21,16 @@ public class AuthorizationController {
 
     private final UserRepository userRepository;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
+    private static final Logger LOG = LoggerFactory.getLogger(AuthorizationController.class);
 
-    public AuthorizationController(UserRepository userRepository){
+    private final TokenService tokenService;
+
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthorizationController(UserRepository userRepository, TokenService tokenService, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
+        this.tokenService = tokenService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/register")
@@ -52,17 +61,20 @@ public class AuthorizationController {
         return ResponseEntity.created(newUserURI).build();
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<Void> userAuthentication(@RequestBody User userCredentials){
+    @GetMapping("/token")
+    public String token(Authentication authentication) {
+        return tokenService.generateToken(authentication);
+    }
 
-        User user = userRepository.findUserByUsername(userCredentials.username());
+    @PostMapping("/login")
+    public ResponseEntity<Void> userAuthentication(Principal principal){
+
+        User user = userRepository.findUserByUsername(principal.getName());
         if(user == null){
             return ResponseEntity.badRequest().build();
         }
 
         return ResponseEntity.ok().build();
-
-
 
     }
 }
