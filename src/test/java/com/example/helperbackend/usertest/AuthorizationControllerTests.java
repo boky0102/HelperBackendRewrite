@@ -1,6 +1,7 @@
 package com.example.helperbackend.usertest;
 
 import com.example.helperbackend.model.User;
+import com.example.helperbackend.model.UserRegisterInput;
 import com.example.helperbackend.repository.UserRepository;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -70,7 +71,7 @@ public class AuthorizationControllerTests {
                 "user1",
                 null,
                 null,
-                "userpassword",
+                "user123pASWORD",
                 null,
                 null,
                 null
@@ -83,7 +84,7 @@ public class AuthorizationControllerTests {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         ResponseEntity<String> getResponse = restTemplate
-                .withBasicAuth("user1", "userpassword")
+                .withBasicAuth("user1", "user123pASWORD")
                 .getForEntity("/users/user1", String.class);
 
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -92,6 +93,37 @@ public class AuthorizationControllerTests {
         String username = documentContext.read("$.username");
         assertThat(username).isEqualTo("user1");
 
+    }
+
+    @Test
+    void shouldNot_RegisterUser_WithInvalidData(){
+
+        User userWithInvalidData = new User(
+                null,
+                "iv",
+                "",
+                "",
+                "gfdgfd",
+                null,
+                null,
+                null
+        );
+
+        ResponseEntity<Void> response = restTemplate.postForEntity("/register", userWithInvalidData, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+    }
+
+    @Test
+    void shouldNot_RegisterUser_withNonValidPassword(){  // 8 char 1 upper case 1 lowercase at least
+
+        UserRegisterInput userWithInvalidPassword = new UserRegisterInput(
+                "ivo111",
+                "123456789"
+        );
+
+        ResponseEntity<Void> response = restTemplate.postForEntity("/register", userWithInvalidPassword, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test

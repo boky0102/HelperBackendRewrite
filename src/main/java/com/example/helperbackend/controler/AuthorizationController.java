@@ -4,6 +4,7 @@ package com.example.helperbackend.controler;
 import com.example.helperbackend.model.User;
 import com.example.helperbackend.repository.UserRepository;
 import com.example.helperbackend.service.TokenService;
+import com.example.helperbackend.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -21,43 +22,25 @@ public class AuthorizationController {
 
     private final UserRepository userRepository;
 
-    private static final Logger LOG = LoggerFactory.getLogger(AuthorizationController.class);
-
     private final TokenService tokenService;
 
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
-    public AuthorizationController(UserRepository userRepository, TokenService tokenService, PasswordEncoder passwordEncoder){
+    public AuthorizationController(UserRepository userRepository, TokenService tokenService, PasswordEncoder passwordEncoder, UserService userService){
         this.userRepository = userRepository;
         this.tokenService = tokenService;
-        this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<Void> registerUser(@RequestBody User postUser){
 
-        User user = userRepository.findUserByUsername(postUser.username());
-
-        if(user != null){
-            return ResponseEntity.badRequest().build();
-        }
-
-        User newUser = new User(
-                null,
-                postUser.username(),
-                postUser.firstName(),
-                postUser.lastName(),
-                passwordEncoder.encode(postUser.password()),
-                null,
-                "USER",
-                null
-        );
+        userService.registerUser(postUser);
 
         URI newUserURI = UriComponentsBuilder.fromPath("/users/{username}")
                 .buildAndExpand(postUser.username())
                 .toUri();
 
-        userRepository.save(newUser);
         return ResponseEntity.created(newUserURI).build();
     }
 
